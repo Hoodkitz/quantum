@@ -59,3 +59,5 @@ quantum_venv/
 # vscode
 .vscode/*
 *~
+generated_output/
+result.png
