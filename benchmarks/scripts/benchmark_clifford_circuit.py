@@ -21,7 +21,8 @@ import cirq
 import tensorflow as tf
 import numpy as np
 
-from tensorflow_quantum.core.ops import tfq_simulate_ops
+from tensorflow_quantum.core.ops import (circuit_execution_ops,
+                                         tfq_simulate_ops)
 from tensorflow_quantum.core.serialize.serializer import serialize_circuit
 from models.random_clifford_circuit import random_clifford_circuit
 import flags
@@ -81,9 +82,16 @@ class CliffordBenchmarks(tf.test.Benchmark):
         # Allow input params for testing purposes.
         self.params = params if params else flags.FLAGS
 
+        backend = self.params.backend
+        if backend == 'cirq':
+            backend = cirq.Simulator()
+        elif backend == 'noiseless':
+            backend = None
+
+        self._op = circuit_execution_ops.get_state_op(backend)
+
     def _simulate_circuit(self, circuit, params):
-        # TODO: implement backend switch
-        return tfq_simulate_ops.tfq_simulate_state(
+        return self._op(
             [str(serialize_circuit(circuit))] * params.batch_size, ["None"],
             [[0]] * params.batch_size)
 
